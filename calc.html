@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pool Volume Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f2f2f2;
+    }
+
+    .calculator {
+      width: 300px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      margin-top: 5px;
+    }
+
+    select {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      margin-top: 5px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    #result, #heatLoadResult, #pumpCapacityResult {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>Pool Volume Calculator</h1>
+    <label for="shape">Select Pool Shape:</label>
+    <select id="shape" onchange="selectPoolShape()">
+      <option value="rectangular">Rectangular</option>
+      <option value="cylindrical">Cylindrical</option>
+    </select>
+
+    <div id="rectangularInputs">
+      <label for="rectLength">Length (feet):</label>
+      <input type="number" id="rectLength" step="0.01" placeholder="Enter length">
+
+      <label for="rectWidth">Width (feet):</label>
+      <input type="number" id="rectWidth" step="0.01" placeholder="Enter width">
+
+      <label for="rectDepth">Depth (feet):</label>
+      <input type="number" id="rectDepth" step="0.01" placeholder="Enter depth">
+    </div>
+
+    <div id="cylindricalInputs" style="display: none;">
+      <label for="cylRadius">Diameter (feet):</label>
+      <input type="number" id="cylRadius" step="0.01" placeholder="Enter radius">
+
+      <label for="cylHeight">Height (feet):</label>
+      <input type="number" id="cylHeight" step="0.01" placeholder="Enter height">
+    </div>
+
+    <button onclick="calculateVolume()">Calculate Volume</button>
+
+    <div id="result"></div>
+  </div>
+
+  
+  <div class="calculator">
+    <h1>Heat Load Calculator</h1>
+
+    <label for="poolVolume">Pool Volume (gallons):</label>
+    <input type="number" id="poolVolume" step="0.01" readonly>
+
+
+    <label for="startTemp">Starting Water Temperature (°F):</label>
+    <input type="number" id="startTemp" step="0.01" placeholder="Enter starting temperature">
+
+    <label for="desiredTemp">Desired Water Temperature (°F):</label>
+    <input type="number" id="desiredTemp" step="0.01" placeholder="Enter desired temperature">
+
+    <label for="timeAllowed">Time Allowed (hours):</label>
+    <input type="number" id="timeAllowed" step="0.01" placeholder="Enter time allowed">
+
+    <button onclick="calculateHeatLoad()">Calculate Heat Load</button>
+
+    <div id="heatLoadResult"></div>
+  </div>
+
+  <div class="calculator">
+    <h1>Circulation Pump Calculator</h1>
+    <label for="poolVolumePump">Pool Volume (gallons):</label>
+    <input type="number" id="poolVolumePump" step="0.01" readonly>
+
+    <label for="circulationTime">Desired Circulation Time (hours):</label>
+    <input type="number" id="circulationTime" step="0.01" value="1" placeholder="Enter circulation time">
+
+    <button onclick="calculatePumpCapacity()">Calculate Pump Capacity</button>
+
+    <div id="pumpCapacityResult"></div>
+  </div>
+
+  <script>
+    let poolVolume = 0;
+
+
+    function calculateHeatLoad() {
+      const startTemp = parseFloat(document.getElementById('startTemp').value);
+      const desiredTemp = parseFloat(document.getElementById('desiredTemp').value);
+      const timeAllowed = parseFloat(document.getElementById('timeAllowed').value);
+
+      if (isNaN(startTemp) || isNaN(desiredTemp) || isNaN(timeAllowed)) {
+        alert('Please enter valid values for all input fields.');
+        return;
+      }
+
+      // Convert temperature from Fahrenheit to Celsius
+      const startTempCelsius = startTemp ;
+      const desiredTempCelsius = desiredTemp ;
+
+      const deltaT = desiredTempCelsius - startTempCelsius;
+      const heatLoad = (poolVolume * deltaT * 1 * 8.34)/timeAllowed;
+      document.getElementById('heatLoadResult').textContent = `The heat load is ${heatLoad.toFixed(2)} BTU/hr .`;
+    }
+
+    function selectPoolShape() {
+      const shape = document.getElementById('shape').value;
+      const rectInputs = document.getElementById('rectangularInputs');
+      const cylInputs = document.getElementById('cylindricalInputs');
+
+      if (shape === 'rectangular') {
+        rectInputs.style.display = 'block';
+        cylInputs.style.display = 'none';
+      } else if (shape === 'cylindrical') {
+        rectInputs.style.display = 'none';
+        cylInputs.style.display = 'block';
+      }
+    }
+
+    function calculateVolume() {
+      const shape = document.getElementById('shape').value;
+      let volume = 0;
+
+      if (shape === 'rectangular') {
+        const length = parseFloat(document.getElementById('rectLength').value);
+        const width = parseFloat(document.getElementById('rectWidth').value);
+        const depth = parseFloat(document.getElementById('rectDepth').value);
+
+        if (isNaN(length) || isNaN(width) || isNaN(depth)) {
+          alert('Please enter valid dimensions for the pool.');
+          return;
+        }
+
+        volume = length * width * depth;
+      } else if (shape === 'cylindrical') {
+        const diameter = parseFloat(document.getElementById('cylRadius').value);
+        const height = parseFloat(document.getElementById('cylHeight').value);
+
+        if (isNaN(diameter) || isNaN(height)) {
+          alert('Please enter valid dimensions for the pool.');
+          return;
+        }
+
+
+        const radius = diameter / 2;
+
+        volume = Math.PI * radius * radius * height;
+      }
+
+      volume = volume * 7.48052;
+      poolVolume = volume;
+
+
+      document.getElementById('result').textContent = `The volume of the pool is ${volume.toFixed(2)} gallons.`;
+
+      document.getElementById('poolVolume').value = poolVolume.toFixed(2);
+      document.getElementById('poolVolumePump').value = poolVolume.toFixed(2);
+
+
+    }
+
+
+    function calculatePumpCapacity() {
+      const poolVolumeGallons = parseFloat(document.getElementById('poolVolume').value);
+      const circulationTime = parseFloat(document.getElementById('circulationTime').value);
+
+      if (isNaN(poolVolumeGallons) || isNaN(circulationTime)) {
+        alert('Please enter valid values for pool volume and circulation time.');
+        return;
+      }
+
+
+      // Calculate required pump capacity in GPM
+      const pumpCapacityGPM = poolVolumeGallons / (circulationTime*60);
+      document.getElementById('pumpCapacityResult').textContent = `The required pump capacity is ${pumpCapacityGPM.toFixed(2)} GPM.`;
+    }
+    
+  </script>
+
+
+
+  
+  <script>
+  
+  </script>
+  
+</body>
+</html>
